@@ -21,7 +21,7 @@ function rollDD(): number {
 }
 
 function getRandomElement<T>(element: T[]): T {
-   return  element[Math.ceil(Math.random() * element.length + 1)]
+   return  element[Math.ceil((Math.random() * element.length) + 1)]
 }
 
 export {getRandomElement}

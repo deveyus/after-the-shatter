@@ -109,7 +109,7 @@ class world implements IWorld {
         this.culturalDifferences[1] = rollDD();
 
         // Law
-        this.lawLevel = rollD(-7 + this.government);
+        this.lawLevel = Math.min(12, Math.max(0, rollD(-7 + this.government)));
 
         // Starport
         if (this.population >= 8 && this.population < 10) {
@@ -130,10 +130,9 @@ class world implements IWorld {
         if (this.starport < 2) {
             this.starport = 2;
         }
-        this.starportClass = starport.portClass.get(this.starport.toString(16));
+        this.starportClass = starport.portClass.get(this.starport.toString());
         // Tech Level
         let score = 0
-        // TODO: Add Starport modifiers.
         if (this.size == 0 || this.size == 1) {
             score = score + 2;
         }
