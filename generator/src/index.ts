@@ -1,7 +1,8 @@
-import { rollD, rollDD } from "./helpers"
+import { rollD, rollDD, getRandomElement } from "./helpers"
 import { IWorld, IFaction, IHexLocation, ETravelCode, ETradeCode } from "./interfaces";
 import { } from "fs";
 import { starport } from "./data/starport_data";
+import { digrams, trigrams} from "./data/word_data"
 
 
 class world implements IWorld {
@@ -23,6 +24,9 @@ class world implements IWorld {
     travelCode: ETravelCode = ETravelCode.None;
     tradeCodes: ETradeCode[] = [];
     constructor(down: number, left: number) {
+       // Name building time
+      this.name =  getRandomElement(trigrams) +  getRandomElement(digrams) + getRandomElement(trigrams)
+
         // Location is external, and required.
         this.location = { down: down, left: left }
 
@@ -80,17 +84,18 @@ class world implements IWorld {
         this.population = rollD(-2);
 
         // Govenrment
-        this.government = rollD(-7 + this.population);
+        this.government = Math.min(12, Math.max(0, rollD(-7 + this.population)));
 
         // Factions
         this.factions = [];
         let factionCount = 0;
         if (this.government == 0 || this.government == 7) {
-            factionCount = Math.ceil(rollD() / 2) + 1;
+            factionCount = Math.ceil(rollD(0, true) / 2) + 1;
         }
         if (this.government >= 10) {
-            factionCount = Math.ceil(rollD() / 2) - 1;
+            factionCount = Math.ceil(rollD(0, true) / 2) - 1;
         }
+        console.log(`Faction Count: ${factionCount}`);
         if (factionCount > 0) {
             for (let i = 0; i <= factionCount; i++) {
                 let factionGov = rollD();
@@ -125,7 +130,7 @@ class world implements IWorld {
         if (this.starport < 2) {
             this.starport = 2;
         }
-        this.starportClass = starport.portClass.get(this.starport);
+        this.starportClass = starport.portClass.get(this.starport.toString(16));
         // Tech Level
         let score = 0
         // TODO: Add Starport modifiers.
@@ -133,11 +138,11 @@ class world implements IWorld {
             score = score + 2;
         }
 
-        if (this.size == 2 || this.size == 3 || this.size == 4) {
+        if (this.size in [2,3,4]) {
             score = score + 1;
         }
 
-        if (this.atmosphere == 0 || this.atmosphere == 1 || this.atmosphere == 2 || this.atmosphere == 3 || this.atmosphere == 10 || this.atmosphere == 11 || this.atmosphere == 12 || this.atmosphere == 13 || this.atmosphere == 14 || this.atmosphere == 15) {
+        if (this.atmosphere in [0,1,2,3,10, 11, 12, 13, 14, 15]) {
             score = score + 1;
         }
 
@@ -149,7 +154,7 @@ class world implements IWorld {
             score = score + 2;
         }
 
-        if (this.population == 1 || this.population == 2 || this.population == 3 || this.population == 4 || this.population == 5 || this.population == 8) {
+        if (this.population in [1,2,3,4,5,8]) {
             score = score + 1;
         }
 
@@ -173,8 +178,9 @@ class world implements IWorld {
             score = score - 2;
         }
 
+        this.techLevel = score;
         // Bases
-        // TODO: Implement actual starport check.
+
         if (this.starportClass != "X") {
             if (this.starportClass == "A") {
                 if (rollD() >= 8) {
@@ -275,4 +281,7 @@ class world implements IWorld {
         }
     } // end of constructor
 }
+
+let currWorld = new world(1,1);
+console.log(currWorld);
 
