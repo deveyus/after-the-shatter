@@ -24,6 +24,10 @@ function getRandomElement<T>(element: T[]): T {
    return  element[Math.ceil((Math.random() * element.length) + 1)]
 }
 
+function bound(min:number, max:number, value:number): number {
+    return Math.min(max, Math.max(min, value));
+}
+export {bound}
 export {getRandomElement}
 export { rollD }
 export { rollDD }

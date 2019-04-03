@@ -1,4 +1,4 @@
-import { rollD, rollDD, getRandomElement } from "./helpers"
+import { rollD, rollDD, getRandomElement, bound } from "./helpers"
 import { IWorld, IFaction, IHexLocation, ETravelCode, ETradeCode } from "./interfaces";
 import { } from "fs";
 import { starport } from "./data/starport_data";
@@ -31,34 +31,34 @@ class world implements IWorld {
         this.location = { down: down, left: left }
 
         // Size is a simple roll
-        this.size = rollD();
+        this.size = bound(1, 10, rollD());
 
         // Atmosphere is a easily modified roll
-        this.atmosphere = rollD(-7 + this.size);
+        this.atmosphere = bound(0, 15, rollD(-7 + this.size));
 
         // Temprature, also known as code-hell
         if (this.atmosphere == 2 || this.atmosphere == 3) {
-            this.temperature = rollD(-2);
+            this.temperature = bound(2, 12, rollD(-2));
         }
 
         if (this.atmosphere == 4 || this.atmosphere == 5 || this.atmosphere.toString(16) == "E") {
-            this.temperature = rollD(-1);
+            this.temperature = bound(2, 12, rollD(-1));
         }
 
         if (this.atmosphere == 6 || this.atmosphere == 7) {
-            this.temperature = rollD();
+            this.temperature = bound(2, 12, rollD());
         }
 
         if (this.atmosphere == 8 || this.atmosphere == 9) {
-            this.temperature = rollD(1);
+            this.temperature = bound(2, 12, rollD(1));
         }
 
         if (this.atmosphere.toString(16) == "A" || this.atmosphere.toString(16) == "D" || this.atmosphere.toString(16) == "F") {
-            this.temperature = rollD(2);
+            this.temperature = bound(2, 12, rollD(2));
         }
 
         if (this.atmosphere.toString(16) == "B" || this.atmosphere.toString(16) == "C") {
-            this.temperature = rollD(6);
+            this.temperature = bound(2, 12, rollD(6));
         }
 
         // Guard against failures.
@@ -70,21 +70,20 @@ class world implements IWorld {
         if (this.size == 0) {
             this.hydrographics = 0;
         } else {
-            if (this.atmosphere.toString(16) != "D") {
-                if (this.atmosphere == 0 || this.atmosphere == 1 || this.atmosphere.toString(16) == "A" || this.atmosphere.toString(16) == "B" || this.atmosphere.toString(16) == "C") {
-                    this.hydrographics = rollD(-7 + -4);
-                }
+            if (this.atmosphere != 13) {
+                if (this.atmosphere in [0, 1, 10, 11, 12]) {
+                    this.hydrographics = bound(0, 10, rollD(-7 + -4));
+                 } else {
+                     this.hydrographics = bound(0, 10, rollD());
+                 }
             }
-        }
-        if (this.hydrographics == -1) {
-            this.hydrographics = rollD(-7 + this.atmosphere);
         }
 
         // Population, a nice breather.
-        this.population = rollD(-2);
+        this.population = bound(0, 12, rollD(-2));
 
         // Govenrment
-        this.government = Math.min(12, Math.max(0, rollD(-7 + this.population)));
+        this.government = bound(1, 12, rollD(-7 + this.population));
 
         // Factions
         this.factions = [];
@@ -109,27 +108,22 @@ class world implements IWorld {
         this.culturalDifferences[1] = rollDD();
 
         // Law
-        this.lawLevel = Math.min(12, Math.max(0, rollD(-7 + this.government)));
+        this.lawLevel = bound(1, 20,  rollD(-7 + this.government));
 
         // Starport
         if (this.population >= 8 && this.population < 10) {
-            this.starport = rollD(1);
+            this.starport = bound(2, 11, rollD(1));
         }
         if (this.population >= 10) {
-            this.starport = rollD(2);
+            this.starport = bound(2, 11, rollD(2));
         }
         if (this.population <= 4) {
-            this.starport = rollD(-1);
+            this.starport = bound(2, 11, rollD(-1));
         }
         if (this.population < 2) {
-            this.starport = rollD(-2);
+            this.starport = bound(2, 11, rollD(-2));
         }
-        if (this.starport > 11) {
-            this.starport = 11;
-        }
-        if (this.starport < 2) {
-            this.starport = 2;
-        }
+        
         this.starportClass = starport.portClass.get(this.starport.toString());
         // Tech Level
         let score = 0
@@ -191,7 +185,7 @@ class world implements IWorld {
                 if (rollD() >= 8) {
                     this.bases.push("Research Base")
                 }
-                this.bases.push("TAS Presense");
+                this.bases.push("TAS Presence");
             }
             if (this.starportClass == "B") {
                 if (rollD() >= 8) {
@@ -207,7 +201,7 @@ class world implements IWorld {
             }
             if (this.starportClass == "C") {
                 if (rollD() >= 10) {
-                    this.bases.push("TAS Presense");
+                    this.bases.push("TAS Presence");
                 }
                 if (rollD() >= 8) {
                     this.bases.push("Scout Base");
